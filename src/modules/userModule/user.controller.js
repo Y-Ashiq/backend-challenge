@@ -196,8 +196,8 @@ const inactiveUsers = handleError(async (req, res, next) => {
 
   const inactiveUsers = await userSchema.findAll({
     where: {
-      lastLogin: {
-        [Sequelize.Op.lt]: fourHoursAgo,
+      updatedAt: {
+        [Sequelize.Op.lt]: inactive,
       },
     },
   });
