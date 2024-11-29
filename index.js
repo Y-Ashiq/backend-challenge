@@ -1,6 +1,7 @@
 import express from "express";
 import sequelize from "./database/DBconnection.js";
 import { BootStrap } from "./src/modules/bootstarp.js";
+import { AppError } from "./src/util/AppError.js";
 const app = express();
 const port = 3000;
 
@@ -11,7 +12,7 @@ app.use(express.json());
 bootstrap for routing */
 BootStrap(app);
 
-app.use("**", (req, res, next) => {
+app.use("*", (req, res, next) => {
   next(new AppError(`invalid url ${req.originalUrl}`, 404));
 });
 
@@ -19,7 +20,6 @@ app.use("**", (req, res, next) => {
 express error handling f */
 app.use((err, req, res, next) => {
   console.log(err.stack);
-
   res.status(err.statusCode).send({ message: "error", error: err.message });
 });
 
