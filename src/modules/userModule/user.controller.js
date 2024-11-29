@@ -3,7 +3,11 @@ import jwt from "jsonwebtoken";
 import userSchema from "../../../database/model/user.model.js";
 import { handleError } from "../../middleware/handleError.js";
 import { AppError } from "../../util/AppError.js";
+import { Op, Sequelize } from "sequelize";
 
+/*
+login endpoint where the token signed for the user and increase the login count for the statistics
+*/
 const signIn = handleError(async (req, res, next) => {
   let { email, password } = req.body;
 
@@ -18,7 +22,7 @@ const signIn = handleError(async (req, res, next) => {
       );
       await userSchema.update(
         {
-          loginCount: Sequelize.literal("logInCount + 1"),
+          logInCount: Sequelize.literal("logInCount + 1"),
           updatedAt: new Date(),
         },
         { where: { email } }
@@ -31,6 +35,9 @@ const signIn = handleError(async (req, res, next) => {
   }
 });
 
+/*
+register user endpoint with encrypt the use's password with bcrypt 
+*/
 const register = handleError(async (req, res, next) => {
   let { name, email, password, role } = req.body;
 
@@ -44,6 +51,9 @@ const register = handleError(async (req, res, next) => {
   res.json({ message: "user created successfully" });
 });
 
+/*
+user verification
+*/
 const verifyUser = handleError(async (req, res, next) => {
   let { email } = req.body;
 
@@ -57,6 +67,9 @@ const verifyUser = handleError(async (req, res, next) => {
   res.json({ message: "user created successfully" });
 });
 
+/*
+get specific user with admin privilege
+*/
 const getUser = handleError(async (req, res, next) => {
   const id = req.params.id;
 
@@ -67,7 +80,10 @@ const getUser = handleError(async (req, res, next) => {
   res.status(200).json({ user: isExist });
 });
 
-const updateuser = handleError(async (req, res, next) => {
+/*
+update specific user with admin privilege
+*/
+const updateUser = handleError(async (req, res, next) => {
   const id = req.params.id;
 
   let isExist = await userSchema.findOne({ where: { id } });
@@ -82,6 +98,10 @@ const updateuser = handleError(async (req, res, next) => {
     res.status(200).json({ message: "user updated successfully" });
   }
 });
+
+/*
+delete specific user with admin privilege
+*/
 const deleteUser = handleError(async (req, res, next) => {
   const id = req.params.id;
 
@@ -96,30 +116,67 @@ const deleteUser = handleError(async (req, res, next) => {
   }
 });
 
-const getAllusers = handleError(async (req, res, next) => {
-  const search = req.query.search;
-  if (search) {
+/*
+get all users with filtration and pagination
+*/
+
+const getAllUsers = handleError(async (req, res, next) => {
+  let page = req.query.page * 1 || 1;
+  let skip = (page - 1) * 5 || 0;
+
+  if ("filter" in req.query) {
     let users = await userSchema.findAll({
+      limit: 5,
+      offset: skip,
       where: {
         [Op.or]: {
-          id: search,
-          name: search,
-          email: search,
-          verified: search,
+          name: req.query.filter,
+          email: req.query.filter,
         },
       },
     });
     res.json(users);
-  } else {
-    const totalUsers = await userSchema.count();
-    const verifiedUsers = await userSchema.count({ where: { verified: true } });
+  } else if ("verified" in req.query) {
+    let users;
 
-    res.json({ totalUsers, verifiedUsers });
+    req.query.verified instanceof Boolean
+      ? (users = await userSchema.findAll({
+          limit: 5,
+          offset: skip,
+          where: {
+            verified: req.query.verified,
+          },
+        }))
+      : next(new AppError("invalid input", 400));
+
+    users ? res.json(users) : next(new AppError("no record", 404));
+  } else {
+    let users = await userSchema.findAll();
+
+    const result = await userSchema.findAll({
+      attributes: [
+        [Sequelize.fn("COUNT", Sequelize.col("*")), "totalUsers"],
+        [
+          Sequelize.fn(
+            "SUM",
+            Sequelize.literal("CASE WHEN verified = true THEN 1 ELSE 0 END")
+          ),
+          "verifiedUsers",
+        ],
+      ],
+      raw: true,
+    });
+
+    res.json({ result, users });
   }
 });
+
+/*
+
+endpoint to calculate the top 3 users or more frequent user you can change the limit number 
+*/
 const topThree = handleError(async (req, res, next) => {
   const topUsers = await userSchema.findAll({
-    attributes: ["id", "name", "email", "logInCount"],
     order: [["logInCount", "DESC"]],
     limit: 3,
   });
@@ -128,13 +185,35 @@ const topThree = handleError(async (req, res, next) => {
   res.json({ topUsers });
 });
 
+/*
+endpoint to display the inactive users past 3 hours
+*/
+
+const inactiveUsers = handleError(async (req, res, next) => {
+  const inactive = new Date();
+
+  inactive.setHours(inactive.getHours - 4);
+
+  const inactiveUsers = await userSchema.findAll({
+    where: {
+      lastLogin: {
+        [Sequelize.Op.lt]: fourHoursAgo,
+      },
+    },
+  });
+
+  if (!inactiveUsers) return next(new AppError("no records", 404));
+  res.json({ inactiveUsers });
+});
+
 export default {
   register,
   signIn,
   verifyUser,
   getUser,
-  updateuser,
+  updateUser,
   deleteUser,
-  getAllusers,
-  topThree
+  getAllUsers,
+  topThree,
+  inactiveUsers,
 };

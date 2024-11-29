@@ -2,7 +2,7 @@ import { AppError } from "../util/AppError.js";
 import { handleError } from "./handleError.js";
 
 export const allowTo = (role) => {
-  return handleError((req, res, next) => {
+  return handleError(async(req, res, next) => {
     console.log(typeof(req.user.role));
     console.log(role);
     

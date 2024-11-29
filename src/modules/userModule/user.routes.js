@@ -8,25 +8,55 @@ import { allowTo } from "../../middleware/allowTo.js";
 
 const userRouter = Router();
 
+/**
+ user registration route
+ */
 userRouter.post(
   "/register",
   validation(userValidation),
   userControllers.register
 );
+
+/**
+ user login route
+ */
 userRouter.post("/signin", userControllers.signIn);
+
+/**
+ verify user route
+ */
+
 userRouter.post("/verifyuser", userControllers.verifyUser);
 
+/**
+ CRUD operations on specific user route with admin privilege
+ */
 userRouter
-  .route("/:id")
-  .put(userControllers.updateuser)
+  .route("/getUser/:id", protectedRoutes, allowTo("admin"))
+  .get(userControllers.getUser)
+  .put(userControllers.updateUser)
   .delete(userControllers.deleteUser);
 
+/**
+get all users route with admin privilege
+ */
+
 userRouter.get(
-  "/getUsers/:id",
+  "/getUsers",
   protectedRoutes,
   allowTo("admin"),
-  userControllers.getUser
+  userControllers.getAllUsers
 );
-userRouter.get("top3",userControllers.topThree)
+
+/**
+top three users route
+ */
+
+userRouter.get("/top3", userControllers.topThree);
+
+/**
+inactive users route
+ */
+userRouter.get("/inactiveUsers", userControllers.inactiveUsers);
 
 export default userRouter;
