@@ -1,6 +1,8 @@
 ### **README: User Management API**
 
 ---
+### postman documentation
+https://documenter.getpostman.com/view/17578628/2sAYBXDC7C
 
 #### **Overview**
 This application is a **User Management API** built using the following technologies:
