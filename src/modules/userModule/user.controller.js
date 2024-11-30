@@ -1,5 +1,6 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import xss from "xss";
 import userSchema from "../../../database/model/user.model.js";
 import { handleError } from "../../middleware/handleError.js";
 import { AppError } from "../../util/AppError.js";
@@ -11,6 +12,10 @@ login endpoint where the token signed for the user and increase the login count 
 const signIn = handleError(async (req, res, next) => {
   let { email, password } = req.body;
 
+
+  email = xss(email)
+  password = xss(password)
+  
   let isExist = await userSchema.findOne({ where: { email } });
   const isMatch = bcrypt.compareSync(password, isExist.password);
 
@@ -41,6 +46,11 @@ register user endpoint with encrypt the use's password with bcrypt
 const register = handleError(async (req, res, next) => {
   let { name, email, password, role } = req.body;
 
+  name = xss(name);
+  email = xss(email)
+  password = xss(password)
+  role = xss(role)
+  
   let isExist = await userSchema.findOne({ where: { email } });
 
   if (isExist) return next(new AppError("this user is already exist", 409));

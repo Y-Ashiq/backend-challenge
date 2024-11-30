@@ -1,7 +1,7 @@
 import { Router } from "express";
 
 import userControllers from "./user.controller.js";
-import { userValidation } from "./user.validation.js";
+import { userLogin, userValidation } from "./user.validation.js";
 import { validation } from "../../middleware/validate.js";
 import { protectedRoutes } from "../../middleware/protectedRoutes.js";
 import { allowTo } from "../../middleware/allowTo.js";
@@ -20,7 +20,7 @@ userRouter.post(
 /**
  user login route
  */
-userRouter.post("/signin", userControllers.signIn);
+userRouter.post("/signin",validation(userLogin), userControllers.signIn);
 
 /**
  verify user route

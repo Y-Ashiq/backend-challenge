@@ -1,12 +1,20 @@
+process.on("uncaughtException", (err) => {
+  console.log("error in the code project", err);
+});
+
 import express from "express";
 import sequelize from "./database/DBconnection.js";
 import { BootStrap } from "./src/modules/bootstarp.js";
 import { AppError } from "./src/util/AppError.js";
-const app = express();
+import helmet from "helmet";
+
+export const app = express();
 const port = 3000;
 
 sequelize.sync();
+
 app.use(express.json());
+app.use(helmet());
 
 /**
 bootstrap for routing */
@@ -21,6 +29,10 @@ express error handling f */
 app.use((err, req, res, next) => {
   console.log(err.stack);
   res.status(err.statusCode).send({ message: "error", error: err.message });
+});
+
+process.on("unhandledRejection", (err) => {
+  console.log("error message:", err);
 });
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));

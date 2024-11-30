@@ -11,7 +11,7 @@ sequelize
     console.log("connected successfully");
   })
   .catch((error) => {
-    console.log("error" + error.errors);
+    console.log(error);
   });
 
 export default sequelize;
