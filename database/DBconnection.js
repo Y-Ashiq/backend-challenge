@@ -1,11 +1,18 @@
 import { Sequelize } from "sequelize";
-import 'dotenv/config'
+import mysql2 from "mysql2";
 
-const sequelize = new Sequelize("sql8750099", process.env.DB_USER, process.env.DB_PASS, {
-  host: process.env.DB_HOST,
-  dialect: "mysql",
-  dialectModule: mysql2
-});
+import "dotenv/config";
+
+const sequelize = new Sequelize(
+  "sql8750099",
+  process.env.DB_USER,
+  process.env.DB_PASS,
+  {
+    host: process.env.DB_HOST,
+    dialect: "mysql",
+    dialectModule: mysql2,
+  }
+);
 
 sequelize
   .authenticate()
