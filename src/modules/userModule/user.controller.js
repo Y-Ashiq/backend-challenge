@@ -44,19 +44,18 @@ const signIn = handleError(async (req, res, next) => {
 register user endpoint with encrypt the use's password with bcrypt 
 */
 const register = handleError(async (req, res, next) => {
-  let { name, email, password, role } = req.body;
+  let { name, email, password } = req.body;
 
   name = xss(name);
   email = xss(email)
   password = xss(password)
-  role = xss(role)
   
   let isExist = await userSchema.findOne({ where: { email } });
 
   if (isExist) return next(new AppError("this user is already exist", 409));
 
   password = bcrypt.hashSync(password, 5);
-  await userSchema.create({ name, email, password, role });
+  await userSchema.create({ name, email, password });
 
   res.json({ message: "user created successfully" });
 });
