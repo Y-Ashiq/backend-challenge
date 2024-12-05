@@ -35,4 +35,8 @@ process.on("unhandledRejection", (err) => {
   console.log("error message:", err);
 });
 
+app.get("/", () => {
+  console.log("hello form the server");
+});
+
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
