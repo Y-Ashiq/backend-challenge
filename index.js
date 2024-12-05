@@ -41,5 +41,5 @@ app.get("/", () => {
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
 
-export default api
+export default app
 
