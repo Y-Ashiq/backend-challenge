@@ -17,9 +17,12 @@ app.use(express.json());
 app.use(helmet());
 
 /**
-bootstrap for routing */
+ bootstrap for routing */
 BootStrap(app);
 
+app.get("/", (req, res) => {
+  res.json({ message: "hello from the server" });
+});
 app.use("*", (req, res, next) => {
   next(new AppError(`invalid url ${req.originalUrl}`, 404));
 });
@@ -35,11 +38,6 @@ process.on("unhandledRejection", (err) => {
   console.log("error message:", err);
 });
 
-app.get("/", (req, res) => {
-  res.send("hello from the server");
-});
-
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
 
-export default app
-
+export default app;
